@@ -23,9 +23,12 @@ class UsersViewModel : ViewModel() {
         }
     }
 
+    // Этот метод вызывает всего лишь один раз за всю жизнь активити
     private fun loadUsers() {
         viewModelScope.launch {
-            _users.value = repository.loadUsers()
+            repository.loadUsers().collect {
+                _users.value = it
+            }
         }
     }
 }
