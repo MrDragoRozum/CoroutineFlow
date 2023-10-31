@@ -14,7 +14,7 @@ class CryptoViewModel : ViewModel() {
 
     private val repository = CryptoRepository
 
-    val state: LiveData<State> = repository.getCurrencyList()
+    val state = repository.getCurrencyList()
         .filter { it.isNotEmpty() }
         .map { State.Content(it) as State }
         .onStart {
@@ -23,5 +23,4 @@ class CryptoViewModel : ViewModel() {
         }
         .onEach { Log.d("CryptoViewModel", "onEach") }
         .onCompletion { Log.d("CryptoViewModel", "onCompletion") }
-        .asLiveData(timeoutInMs = 10000)
 }
