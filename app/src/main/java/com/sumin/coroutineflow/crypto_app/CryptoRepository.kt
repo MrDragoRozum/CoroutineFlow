@@ -2,6 +2,9 @@ package com.sumin.coroutineflow.crypto_app
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlin.random.Random
 
@@ -10,15 +13,23 @@ object CryptoRepository {
     private val currencyNames = listOf("BTC", "ETH", "USDT", "BNB", "USDC")
     private val currencyList = mutableListOf<Currency>()
 
+    private val refreshList = MutableSharedFlow<Unit>()
+
     fun getCurrencyList(): Flow<List<Currency>> = flow {
+        delay(3000)
+        generateCurrencyList()
         emit(currencyList.toList())
-        while(true) {
+        refreshList.collect {
+            delay(3000)
             generateCurrencyList()
-            delay(3000)
             emit(currencyList.toList())
-            delay(3000)
         }
     }
+
+    suspend fun refreshList() {
+        refreshList.emit(Unit)
+    }
+
     private fun generateCurrencyList() {
         val prices = buildList {
             repeat(currencyNames.size) {
