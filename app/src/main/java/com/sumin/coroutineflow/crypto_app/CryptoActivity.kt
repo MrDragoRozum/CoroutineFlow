@@ -3,6 +3,7 @@ package com.sumin.coroutineflow.crypto_app
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.sumin.coroutineflow.databinding.ActivityCryptoBinding
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CryptoActivity : AppCompatActivity() {
@@ -40,31 +42,44 @@ class CryptoActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
+        viewModel.toString()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.state.collect {
-                when (it) {
-                    is State.Initial -> {
-                        binding.progressBarLoading.isVisible = false
-                        binding.buttonRefreshList.isEnabled = false
+                viewModel.state.collect {
+                    when (it) {
+                        is State.Initial -> {
+                            binding.progressBarLoading.isVisible = false
+                            binding.buttonRefreshList.isEnabled = false
+                        }
+
+                        is State.Loading -> {
+                            binding.progressBarLoading.isVisible = true
+                            binding.buttonRefreshList.isEnabled = false
+                        }
+
+                        is State.Content -> {
+                            binding.progressBarLoading.isVisible = false
+                            binding.buttonRefreshList.isEnabled = true
+                            adapter.submitList(it.currencyList)
+                        }
                     }
 
-                    is State.Loading -> {
-                        binding.progressBarLoading.isVisible = true
-                        binding.buttonRefreshList.isEnabled = false
-                    }
-
-                    is State.Content -> {
-                        binding.progressBarLoading.isVisible = false
-                        binding.buttonRefreshList.isEnabled = true
-                        adapter.submitList(it.currencyList)
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.state2.collect {
+                    when(it) {
+                        is State.Content -> {
+                            Log.d("CryptoActivity", it.currencyList.joinToString())
+                        }
+                        else -> {}
                     }
                 }
-
             }
         }
     }
-}
 
 
     companion object {
